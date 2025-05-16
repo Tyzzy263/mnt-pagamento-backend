@@ -2,36 +2,49 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware para processar JSON
-app.use(express.json());
+app.use(express.json()); // Para aceitar JSON nos pedidos
 
-// Simulação de base de dados
-const pedidos = [];
+// Banco de dados em memória (temporário)
+let pedidos = [];
 
-// Rota inicial
+// Rota principal
 app.get('/', (req, res) => {
   res.send('Servidor da Casa de dados de MNT está online!');
 });
 
-// Rota para criar um pedido
-app.post('/comprar', (req, res) => {
-  const { numero, pacote, metodoPagamento } = req.body;
-
-  if (!numero || !pacote || !metodoPagamento) {
-    return res.status(400).json({ erro: 'Preencha todos os campos!' });
-  }
-
-  const novoPedido = { id: pedidos.length + 1, numero, pacote, metodoPagamento, status: 'pendente' };
-  pedidos.push(novoPedido);
-  res.status(201).json({ mensagem: 'Pedido criado com sucesso!', pedido: novoPedido });
-});
-
-// Rota para listar pedidos (temporária, só para testes)
+// Rota para listar todos os pedidos
 app.get('/pedidos', (req, res) => {
   res.json(pedidos);
 });
 
-// Iniciar servidor
+// Rota para criar um novo pedido
+app.post('/pedidos', (req, res) => {
+  const pedido = req.body;
+
+  if (!pedido.nome || !pedido.numero || !pedido.pacote) {
+    return res.status(400).json({ erro: 'Dados incompletos. Envie nome, número e pacote.' });
+  }
+
+  pedido.id = pedidos.length + 1;
+  pedido.status = 'pendente';
+  pedidos.push(pedido);
+
+  res.status(201).json({ mensagem: 'Pedido criado com sucesso!', pedido });
+});
+
+// Rota para ver pedido por ID
+app.get('/pedidos/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  const pedido = pedidos.find(p => p.id === id);
+
+  if (!pedido) {
+    return res.status(404).json({ erro: 'Pedido não encontrado' });
+  }
+
+  res.json(pedido);
+});
+
+// Iniciar o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
