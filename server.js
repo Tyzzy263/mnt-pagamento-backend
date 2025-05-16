@@ -17,15 +17,26 @@ app.post('/pedido', (req, res) => {
     return res.status(400).json({ erro: 'Por favor, preencha todos os campos.' });
   }
 
-  // Aqui você poderia salvar o pedido em um banco ou enviar por e-mail
+  // Aqui você pode salvar o pedido em banco ou enviar por e-mail
   res.status(200).json({
     mensagem: 'Pedido recebido com sucesso!',
-    dados: {
-      nome,
-      numero,
-      pacote
-    }
+    dados: { nome, numero, pacote }
   });
+});
+
+// Rota para receber notificações de pagamento (webhook)
+app.post('/webhook-pagamento', (req, res) => {
+  const pagamento = req.body;
+
+  if (!pagamento.transacao_id || !pagamento.status || !pagamento.valor) {
+    return res.status(400).json({ erro: 'Dados incompletos no webhook.' });
+  }
+
+  console.log('Notificação de pagamento recebida:', pagamento);
+
+  // Aqui pode atualizar status no banco ou processar pedido
+
+  res.status(200).json({ mensagem: 'Webhook recebido com sucesso!' });
 });
 
 app.listen(PORT, () => {
